@@ -1,5 +1,6 @@
 
 library(R.utils)
+library(GenSA)
 
 boa.hpd <- function(x, alpha) {
   n <- length(x)
@@ -78,6 +79,52 @@ samp.Post <- function(X, N, Omega, w, a, b) {
   return(gen.Post(X, N, Omega[which(rmultinom(1, 1, w) == 1), ], a, b))
 }
 
+euc.dist <- function(x1, x2, w = c(1, 1)) {
+  if (sum(is.na(x1)) > 1) {
+    Inf
+  } else {
+    sqrt(sum(w * ((x1 - x2)^2)))
+  }
+}
+
+#' @importFrom stats qbeta
+dist.beta.HPD <- function(ess, fit, alpha, jj) {
+  al <- fit$mean_est[jj] * ess
+  al <- max(1e-2, al)
+  be <- ess - al
+  be <- max(1e-2, be)
+  euc.dist(fit$HPD, qbeta(
+    c(alpha / 2, 1 - alpha / 2),
+    al, be
+  ))
+}
+
+#' @importFrom GenSA GenSA
+ESS.from.HPD.i <- function(jj, fit, alpha) {
+  # library(GenSA)
+  opt <-
+    GenSA(
+      par = 1,
+      fn = dist.beta.HPD,
+      lower = 0,
+      upper = 10000000,
+      # control=list(maxit=pars$DTW.maxit),
+      fit = fit,
+      alpha = alpha,
+      jj = jj
+    )
+  opt$par
+}
+
+#' @importFrom foreach %dopar%
+calc.ESS.from.HPD <- function(fit, alpha) {
+  ## fit is list with median vec and HPD vec ##
+  i <- fit$drug_index
+  #res <-c()
+  #foreach(i in 1:length(fit$mean_est))# = seq_along(fit$mean_est), .combine = c) %dopar% {
+    ESS.from.HPD.i(i, fit, alpha)
+  
+}
 
 
 #' @title Fit the Exact MEM Model
@@ -269,13 +316,13 @@ mem_single <- function(responses,
   }
   ret <-
     list(
-   
-      maximizer = MAX,
+      MLE = MAX,
       PRIOR = prior_inclusion,
       MAP = MAP,
       PEP = PEP,
+      drug_index = drug_index,
       post.prob = post.prob,
-      ESS = pESS,
+      ESS = round(pESS, 2),
       HPD = HPD,
       samples = samples,
       responses = responses,
@@ -290,7 +337,9 @@ mem_single <- function(responses,
       models = models,
       call = call
     )
-  
+  ret$mean_est <- unlist(lapply(ret$samples, mean))
+  ret$median_est <- unlist(lapply(ret$samples, median))
+  ret$ESS2 <-round(calc.ESS.from.HPD(fit = ret, alpha = ret$alpha), 2)
   #ret$samples <- sample_posterior_model(ret)
   #ret$mean_est <- colMeans(ret$samples)
   #ret$median_est <- apply(ret$samples, 2, median)
@@ -309,16 +358,31 @@ baskets <- 1:6
 
 vemu_wide1 <- vemu_wide[baskets, ]
 
-# Full Bayes
-exact_single <- mem_single(
-  responses = vemu_wide1$responders,
-  size = vemu_wide1$evaluable,
-  name = vemu_wide1$baskets,
-  drug_index = 6, 
-  p0 = 0.25
-)
+
+allM <- allP <- matrix(0, 0, 6)
+allPost <- ESS1 <- ESS2 <-c()
+aHPD <- matrix(0, 2, 0)
 # vemu_wide1$responders/vemu_wide1$evaluable
-print(exact_single)
-print(vemu_wide1$responders / vemu_wide$evaluable)
-print(exact_single$MAP)
-print(exact_single$PEP)
+for(i in 1:6)
+{
+  # Full Bayes
+  exact_single <- mem_single(
+    responses = vemu_wide1$responders,
+    size = vemu_wide1$evaluable,
+    name = vemu_wide1$baskets,
+    drug_index = i, 
+    p0 = 0.25
+  )
+  # print(exact_single)
+   #print(vemu_wide1$responders / vemu_wide$evaluable)
+  # print(exact_single$MAP)
+  # print(exact_single$PEP)
+  allM <- rbind(allM, exact_single$MAP)
+  allP <- rbind(allP, exact_single$PEP)
+  allPost <- c(allPost, exact_single$post.prob)
+  ESS1 <- c(ESS1, exact_single$ESS)
+  ESS2 <- c(ESS2, exact_single$ESS2)
+  aHPD <- cbind(aHPD, exact_single$HPD)
+}
+
+
