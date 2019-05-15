@@ -89,7 +89,7 @@ euc.dist <- function(x1, x2, w = c(1, 1)) {
 
 #' @importFrom stats qbeta
 dist.beta.HPD <- function(ess, fit, alpha, jj) {
-  al <- fit$mean_est[jj] * ess
+  al <- fit$mean_est * ess
   al <- max(1e-2, al)
   be <- ess - al
   be <- max(1e-2, be)
@@ -125,6 +125,57 @@ calc.ESS.from.HPD <- function(fit, alpha) {
     ESS.from.HPD.i(i, fit, alpha)
   
 }
+
+
+
+
+#' @importFrom stats qbeta
+dist.beta.HPDwid <- function(ess, fit, alpha, jj) {
+  al <- fit$median_est * ess
+  al <- max(1e-2, al)
+  be <- ess - al
+  be <- max(1e-2, be)
+  return(abs((fit$HPD[2] - fit$HPD[1]) - (diff(
+    qbeta(
+      c(alpha / 2, 1 - alpha / 2),
+      al, be
+    )
+  ))))
+}
+
+
+
+
+
+ESS.from.HPDwid.i <- function(jj, fit, alpha) {
+  # library(GenSA)
+  opt <-
+    GenSA::GenSA(
+      par = 1,
+      fn = dist.beta.HPDwid,
+      lower = 0,
+      upper = 10000000,
+      # control=list(maxit=pars$DTW.maxit),
+      fit = fit,
+      alpha = alpha,
+      jj = jj
+    )
+  return(opt$par)
+}
+
+
+
+
+
+calc.ESS.from.HPDwid <- function(fit, alpha) {
+  ## fit is list with median vec and HPD vec ##
+  
+  i <- fit$drug_index
+  #res <-c()
+  #foreach(i in 1:length(fit$mean_est))# = seq_along(fit$mean_est), .combine = c) %dopar% {
+  ESS.from.HPDwid.i(i, fit, alpha)
+}
+
 
 
 #' @title Fit the Exact MEM Model
@@ -340,7 +391,8 @@ mem_single <- function(responses,
   ret$mean_est <- unlist(lapply(ret$samples, mean))
   ret$median_est <- unlist(lapply(ret$samples, median))
   ret$ESS2 <-round(calc.ESS.from.HPD(fit = ret, alpha = ret$alpha), 2)
-  #ret$samples <- sample_posterior_model(ret)
+  ret$ESS3 <-round(calc.ESS.from.HPDwid(fit = ret, alpha = ret$alpha), 2)
+    #ret$samples <- sample_posterior_model(ret)
   #ret$mean_est <- colMeans(ret$samples)
   #ret$median_est <- apply(ret$samples, 2, median)
 
@@ -360,7 +412,7 @@ vemu_wide1 <- vemu_wide[baskets, ]
 
 
 allM <- allP <- matrix(0, 0, 6)
-allPost <- ESS1 <- ESS2 <-c()
+allPost <- ESS1 <- ESS2 <- ESS3 <-c()
 aHPD <- matrix(0, 2, 0)
 # vemu_wide1$responders/vemu_wide1$evaluable
 for(i in 1:6)
@@ -382,6 +434,7 @@ for(i in 1:6)
   allPost <- c(allPost, exact_single$post.prob)
   ESS1 <- c(ESS1, exact_single$ESS)
   ESS2 <- c(ESS2, exact_single$ESS2)
+  ESS3 <- c(ESS3, exact_single$ESS3)
   aHPD <- cbind(aHPD, exact_single$HPD)
 }
 
