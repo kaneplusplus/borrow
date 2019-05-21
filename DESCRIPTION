@@ -1,7 +1,7 @@
 Package: borrow
 Title: Borrow Power from Historical Clinical Trials
 Version: 0.0.1
-Authors@R: 
+Authors@R: c(
   person("Nan", "Chen",
          email = "nchen2@mdanderson.org",
          role = c("aut")),
@@ -14,12 +14,24 @@ Authors@R:
   person("Michael", "Kane",
          email = "michael.kane@yale.edu",
          role = c("aut", "cre"),
-         comment = ORCID = "http://orcid.org/0000-0003-1899-6662"))
+         comment = c(ORCID = "http://orcid.org/0000-0003-1899-6662")))
 Description: What the package does (one paragraph).
 License: LGPL-2
 Maintainer: Michael J. Kane <michael.kane@yale.edu>
 Encoding: UTF-8
 LazyData: true
+Imports: 
+    GenSA,
+    foreach, 
+    ggplot2, 
+    stats, 
+    tibble, 
+    tidyr,
+    dplyr,
+    gridExtra,
+    itertools,
+    crayon,
+    cli
 Suggests:
   knitr,
   rmarkdown,
