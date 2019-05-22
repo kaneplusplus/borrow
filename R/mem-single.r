@@ -217,12 +217,12 @@ mem_single <- function(responses,
   ret$mean_est <- mean(ret$samples)
   ret$median_est <- median(ret$samples)
   #browser()
-  ret$ESS2 <-round(calc.ESS.from.HPD(fit = ret, alpha = ret$alpha), 2)
-  ret$ESS3 <-round(calc.ESS.from.HPDwid(fit = ret, alpha = ret$alpha), 2)
+  ret$ESS <-round(calc.ESS.from.HPD(fit = ret, alpha = ret$alpha), 2)
+  #ret$ESS3 <-round(calc.ESS.from.HPDwid(fit = ret, alpha = ret$alpha), 2)
   prec <- 1.0 / var(ret$samples)
   #ret$ESS4 <- comp.ESS(prec, responses[drug_index], responses[drug_index] / size[drug_index])
   #ret$ESS4 <- comp.ESS(prec, responses[drug_index], mean(ret$samples))
-  ret$ESS4 <- round(betaESS(mean(ret$samples), var(ret$samples)), 2)
+  #ret$ESS4 <- round(betaESS(mean(ret$samples), var(ret$samples)), 2)
   
   
     #ret$samples <- sample_posterior_model(ret)
