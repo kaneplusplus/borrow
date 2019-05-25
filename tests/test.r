@@ -1,8 +1,10 @@
 #library(testthat)
 library(basket)
+library(tidyr)
+library(tibble)
+library(ggplot2)
 
-#test_check("basket")
-library(borrowB)
+library(borrow)
 
 
 data(vemu_wide)
@@ -39,4 +41,5 @@ for(i in 1:6)
 }
 
 
-ESSBeta<-ESS4
+x <- exact_single
+plot_borrow_density(x)
