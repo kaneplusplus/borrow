@@ -3,8 +3,7 @@
 #' @description Create the posterior density plot of the studied basket.
 #' @param x the fitted model calculated from the mem_single() function.
 
-#' @importFrom ggplot2 ggplot aes geom_density scale_fill_manual facet_grid
-#' xlab ylab theme_minimal xlim geom_vline labeller label_wrap_gen
+#' @importFrom ggplot2 ggplot 
 #' @export
 plot_borrow_density <- function(x, ...) {
   dots <- list(...)

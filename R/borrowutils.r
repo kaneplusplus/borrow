@@ -1,7 +1,4 @@
 
-#library(R.utils)
-#library(GenSA)
-
 betaESS <- function(meanV, varV)
 {
   ess <- meanV * (1 - meanV) / varV - 1

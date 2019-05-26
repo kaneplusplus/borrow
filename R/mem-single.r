@@ -39,7 +39,7 @@
 #' @importFrom foreach foreach %dopar% getDoParName getDoSeqName registerDoSEQ
 #' %do%
 #' @importFrom stats median
-#' @importFrom R.utilsB insert
+#' @importFrom R.utils insert
 
 #' @importFrom crayon red
 #' @importFrom itertools isplitRows
