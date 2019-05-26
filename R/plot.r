@@ -1,4 +1,7 @@
-
+#' @title Plot the posterior density of the fitting result
+#'
+#' @description Create the posterior density plot of the studied basket.
+#' @param x the fitted model calculated from the mem_single() function.
 
 #' @importFrom ggplot2 ggplot aes geom_density scale_fill_manual facet_grid
 #' xlab ylab theme_minimal xlim geom_vline labeller label_wrap_gen
@@ -14,6 +17,7 @@ plot_borrow_density <- function(x, ...) {
   
   if ("basket_levels" %in% names(dots)) {
     basket_levels <- dots$basket_levels
+    d$Basket <- factor(d$Basket, levels = basket_levels)
     d$Basket <- factor(d$Basket, levels = basket_levels)
   } else {
     d$Basket <- as.factor(d$Basket)

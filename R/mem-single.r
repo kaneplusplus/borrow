@@ -1,13 +1,12 @@
-#source("utils.r")
 
-#library(R.utils)
 
-#' @title Fit the Exact MEM Model
+#' @title Fit the MEM Model for single subgroup
 #'
-#' @description Fit the MEM model using full Bayesian inference.
+#' @description Fit the MEM model for single subgroup using full Bayesian inference.
 #' @param responses the number of responses in each basket.
 #' @param size the size of each basket.
 #' @param name the name of each basket.
+#' @param drug_index the index of the basket to be studied.
 #' @param p0 the null response rate for the poster probability calculation
 #' (default 0.15).
 #' @param shape1 the first shape parameter(s) for the prior of each basket
@@ -22,8 +21,8 @@
 #' @param call the call of the function (default NULL).
 #' @importFrom stats rbinom
 #' @examples
-#' # 3 baskets, each with enrollement size 5
-#' trial_sizes <- rep(5, 3)
+#' # 6 baskets, each with enrollement size 5
+#' trial_sizes <- rep(25, 6)
 #' 
 #' # The response rates for the baskets.
 #' resp_rate <- 0.15
@@ -33,10 +32,10 @@
 #' trials <- data.frame(
 #'   responses = rbinom(trial_sizes, trial_sizes, resp_rate),
 #'   size = trial_sizes,
-#'   name = letters[1:3]
+#'   name = letters[1:6]
 #' )
 #' 
-#' summary(mem_exact(trials$responses, trials$size, trials$name))
+#' mem_single(trials$responses, trials$size, trials$name, 2)
 #' @importFrom foreach foreach %dopar% getDoParName getDoSeqName registerDoSEQ
 #' %do%
 #' @importFrom stats median
@@ -223,12 +222,6 @@ mem_single <- function(responses,
   #ret$ESS4 <- comp.ESS(prec, responses[drug_index], responses[drug_index] / size[drug_index])
   #ret$ESS4 <- comp.ESS(prec, responses[drug_index], mean(ret$samples))
   #ret$ESS4 <- round(betaESS(mean(ret$samples), var(ret$samples)), 2)
-  
-  
-    #ret$samples <- sample_posterior_model(ret)
-  #ret$mean_est <- colMeans(ret$samples)
-  #ret$median_est <- apply(ret$samples, 2, median)
-
 
   class(ret) <- c("mem_single", "exchangeability_model")
   return(ret)
