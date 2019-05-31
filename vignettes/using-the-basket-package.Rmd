@@ -21,14 +21,13 @@ knitr::opts_chunk$set(
 
 The package includes the following main functions: 
 
-- mem_single - Create a single basket analysis to study the borrowing fro other baskets.
+- mem_single - Create a single basket analysis to study the borrowing strength from other baskets.
 
 - plot_borrow_density - Plot the estimated densities of the studied basket.
 
 
-## Here is an example on how to use the borrow ackage
+## Here is an example on how to use the borrow package
 
-ptional basket names. 
 
 ```{r}
 library(borrow)
@@ -61,5 +60,7 @@ print(exact_single$post.prob)
 print(exact_single$ESS)
 
 plot_borrow_density(exact_single)
+
+summary(exact_single)
 ```
 

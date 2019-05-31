@@ -42,4 +42,29 @@ for(i in 1:6)
 
 
 x <- exact_single
-  plot_borrow_density(x)
+plot_borrow_density(x)
+summary(x)
+
+
+
+test2 <- mem_single(
+  responses = c(3,4,10,9,2,11),
+  size = rep(25, 6),
+  name = c("1", "2", "3", "4", "5", "6"),
+  drug_index = 2, 
+  p0 = 0.22
+)
+print(test2$MAP)
+summary(test2)
+
+test3 <- mem_single(
+  responses = c(3,4,10,9,2,11),
+  size = rep(25, 6),
+  name = c("1", "2", "3", "4", "5", "6"),
+  drug_index = 3, 
+  p0 = 0.22
+)
+print(test3$MAP)
+summary(test3)
+
+
