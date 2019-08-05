@@ -14,7 +14,7 @@ boa.hpd <- function(x, alpha) {
   i <- order(b - a)[1]
   structure(c(a[i], b[i]), names = c("Lower Bound", "Upper Bound"))
 }
-#' @importFrom stats beta log
+
 logMarg.DensSingle <- function(i, mvec, xvec, nvec, avec, bvec, betaV, prod.vec) {
   
   p.vec <- prod(prod.vec ^ (1 - mvec))
@@ -51,7 +51,7 @@ post.Weights <- function(m, drug_index, log.Marg, PRIOR) {
   (exp(log.Marg) * PRIOR) / sum(exp(log.Marg) * PRIOR)
 }
 
-
+#' @importFrom stats pbeta
 eval.Post <- function(p0, X, N, Omega, w, a, b, alternative = "greater") {
   alph <- a + Omega %*% X
   beta <- b + (Omega %*% N - Omega %*% X)
@@ -70,6 +70,7 @@ ESS <- function(X, N, Omega, a, b) {
   alph + beta
 }
 
+#' @importFrom stats rbeta
 gen.Post <- function(X, N, Omega, a, b) {
   alph <- a + Omega %*% X
   beta <- b + (Omega %*% N - Omega %*% X)

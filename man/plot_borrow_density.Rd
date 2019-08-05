@@ -8,6 +8,8 @@ plot_borrow_density(x, ...)
 }
 \arguments{
 \item{x}{the fitted model calculated from the mem_single() function.}
+
+\item{...}{other parameters}
 }
 \description{
 Create the posterior density plot of the studied basket.

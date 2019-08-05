@@ -38,9 +38,8 @@
 #' mem_single(trials$responses, trials$size, trials$name, 2)
 #' @importFrom foreach foreach %dopar% getDoParName getDoSeqName registerDoSEQ
 #' %do%
-#' @importFrom stats median
+#' @importFrom stats median var
 #' @importFrom R.utils insert
-
 #' @importFrom crayon red
 #' @importFrom itertools isplitRows
 #' @export
@@ -91,8 +90,7 @@ mem_single <- function(responses,
   betaV <- beta(shape1, shape2)
   prod.vec <- beta(xvec + shape1, nvec + shape2 - xvec) / beta(shape1, shape2)
   log.Marg <- c()
-  for(i in 1:dim(m)[1])
-  {
+  for(i in 1:dim(m)[1]) {
     mvec <- insert(m[i,], drug_index, 1)
     ld <- logMarg.DensSingle(drug_index, mvec, xvec, nvec, shape1,shape2, betaV, prod.vec)
     log.Marg <- c(log.Marg, ld)
@@ -229,6 +227,8 @@ mem_single <- function(responses,
 
 #' @importFrom ggplot2 ggplot aes geom_density scale_fill_manual facet_grid
 #' xlab ylab theme_minimal xlim geom_vline labeller label_wrap_gen
+#' @importFrom tibble as_tibble
+#' @importFrom tidyr gather
 #' @export
 plot_borrow_density <- function(x, ...) {
   dots <- list(...)

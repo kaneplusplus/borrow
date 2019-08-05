@@ -2,7 +2,7 @@
 #'
 #' @description Create the posterior density plot of the studied basket.
 #' @param x the fitted model calculated from the mem_single() function.
-
+#' @param ... other parameters
 #' @importFrom ggplot2 ggplot 
 #' @export
 plot_borrow_density <- function(x, ...) {

@@ -31,12 +31,14 @@ Imports:
     gridExtra,
     itertools,
     crayon,
-    cli
+    cli,
+    R.utils
 Suggests:
     knitr,
     rmarkdown,
     testthat,
-    covr
+    covr,
+    basket
 VignetteBuilder:
   knitr
 RoxygenNote: 6.1.1
