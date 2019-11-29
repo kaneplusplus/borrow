@@ -41,6 +41,8 @@ for(i in 1:6)
 }
 
 
+
+
 x <- exact_single
 plot_borrow_density(x)
 summary(x)
@@ -68,3 +70,13 @@ print(test3$MAP)
 summary(test3)
 
 
+
+test4 <- borrow_multiple(
+  responses = vemu_wide1$responders,
+  size = vemu_wide1$evaluable,
+  name = vemu_wide1$baskets,
+  drug_index = 1:6, 
+  p0 = 0.25
+)
+summary(test4)
+object=test4
