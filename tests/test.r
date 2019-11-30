@@ -79,4 +79,24 @@ test4 <- borrow_multiple(
   p0 = 0.25
 )
 summary(test4)
-object=test4
+
+
+
+
+library(doParallel)
+library(foreach)
+
+
+numCores <- detectCores()
+numCores
+registerDoParallel(numCores)
+
+tr <-  c(rep(0.1, 3), rep(0.3, 3))
+test5 <- borrow_simulate(
+  true_rate =  tr,
+  size = vemu_wide1$evaluable,
+  name = vemu_wide1$baskets,
+  drug_index = 1:6, 
+  p0 = 0.2,
+  num_sim = 15
+)

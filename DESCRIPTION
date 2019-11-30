@@ -21,7 +21,6 @@ Maintainer: Michael J. Kane <michael.kane@yale.edu>
 Encoding: UTF-8
 LazyData: true
 Imports: 
-    GenSA,
     foreach, 
     ggplot2, 
     stats, 

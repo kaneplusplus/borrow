@@ -1,14 +1,15 @@
   
 
-#' @title Fit the MEM Model for multiple subgroups using borrow
-#'
-#' @description Fit the MEM model for multiple subgroups using borrow method.
-#' @param responses the number of responses in each basket.
+#' @title borrow simulation
+#' @description borrow trial simulations for multiple subgroups using borrow method.
+#' @param true_rate the true response rates in each basket.
 #' @param size the size of each basket.
 #' @param name the name of each basket.
 #' @param drug_index the index vector of the basket to be studied.
 #' @param p0 the null response rate vector for the poster probability calculation
 #' (default 0.15).
+#' @param num_sim the number of simulationst
+#' (default 100).
 #' @param shape1 the first shape parameter(s) for the prior of each basket
 #' (default 0.5).
 #' @param shape2 the second shape parameter(s) for the prior of each basket
@@ -30,76 +31,74 @@
 #' # The trials: a column of the number of responses and a column of the
 #' # the size of each trial.
 #' trials <- data.frame(
-#'   responses = rbinom(trial_sizes, trial_sizes, resp_rate),
+#'   resprate = rep(0.15, 6),
 #'   size = trial_sizes,
 #'   name = letters[1:6]
 #' )
 #' 
-#' borrow_multiple(trials$responses, trials$size, trials$name, drug_index = 1:2)
+#' borrow_simulate(trials$resprate, trials$size, trials$name, drug_index = 1:2)
 #' 
 #' @importFrom foreach foreach %dopar% getDoParName getDoSeqName registerDoSEQ
 #' %do%
 #' @importFrom stats median var
 #' @importFrom R.utils insert
 #' @importFrom crayon red
+#' @importFrom foreach foreach
 #' @importFrom itertools isplitRows
 #' @export
-borrow_multiple <- function(responses,
+borrow_simulate <- function(true_rate,
                       size,
                       name,
                       drug_index,
                       p0 = 0.15,
+                      num_sim =100,
                       shape1 = 0.5,
                       shape2 = 0.5,
-                      prior = rep(1.0, length(responses)) / 2,
+                      prior = rep(1.0, length(size)) / 2,
                       hpd_alpha = 0.05,
                       alternative = "greater",
                       call = NULL) {
-
   
-  if (length(responses) != length(size)) {
+  if (length(true_rate) != length(size)) {
     stop(red(
-      "The length of the responses and size parameters",
+      "The length of the true response rates and size parameters",
       "must be equal."
     ))
   }
-  
-  if (length(shape1) == 1) {
-    shape1 <- rep(shape1, length(responses))
+
+  numGroup <- length(size)
+  allResp <- matrix(0, num_sim, 0)
+  for(i in 1:numGroup){
+    allResp <- cbind(allResp, rbinom(num_sim, size[i], true_rate[i]))
   }
-  if (length(shape2) == 1) {
-    shape2 <- rep(shape2, length(responses))
-  }
-  
-  if (length(p0) == 1) {
-    p0 <- rep(p0, length(responses))
-  }
-  
 
   allResu <- list()
-  #print(responses)
-  #browser()
-  rr <- responses
-  for (i in 1:length(drug_index))
+  for (i in 1:num_sim)
   {
-    ind <- drug_index[i]
-    p0_v = p0[ind]
-    r <- mem_single(responses = rr,
-                    size = size,
-                    name= name,
-                    drug_index = ind,
-                    p0 = p0_v,
-                    shape1 = shape1,
-                    shape2 = shape2,
-                    prior = prior,
-                    hpd_alpha = hpd_alpha,
-                    alternative = "greater"
-                    )
-    allResu[[i]] <- r
+
+
   }
   
+  allResu <- foreach(i = 1:num_sim, .combine = 'c') %dopar% {
+    
+    resp <- allResp[i, ]
+ 
+    r <- borrow_multiple(responses =  resp,
+                         size = size,
+                         name = name,
+                         drug_index = drug_index,
+                         p0 = p0,
+                         shape1 = shape1,
+                         shape2 = shape2,
+                         prior = prior,
+                         hpd_alpha = hpd_alpha,
+                         alternative = alternative
+    )
+    t <- summary(r)
+    list(t)
+  }
 
-  ret <- list(data = allResu, drug_index = drug_index)
-  class(ret) <- c("borrow_multiple", "exchangeability_model")
+  ret <- list(data = allResu, drug_index = drug_index, true_rate = true_rate, allResp = allResp)
+  class(ret) <- c("borrow_simulate", "exchangeability_model")
   return(ret)
 }

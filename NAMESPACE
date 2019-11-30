@@ -3,6 +3,7 @@
 S3method(summary,borrow_multiple)
 S3method(summary,mem_single)
 export(borrow_multiple)
+export(borrow_simulate)
 export(mem_single)
 export(plot_borrow_density)
 importFrom(GenSA,GenSA)
