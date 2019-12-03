@@ -5,6 +5,7 @@ library(tibble)
 library(ggplot2)
 
 library(borrow)
+source("update.r")
 
 
 data(vemu_wide)
@@ -96,7 +97,13 @@ test5 <- borrow_simulate(
   true_rate =  tr,
   size = vemu_wide1$evaluable,
   name = vemu_wide1$baskets,
-  drug_index = 1:6, 
+  drug_index = c(2, 4), 
   p0 = 0.2,
-  num_sim = 15
+  num_sim = 100
 )
+#saveRDS(test5, "simres.rds")
+
+summary(test5)
+thr <- calibrate(test5, prob= (1:9)/ 10)
+thr
+plot_sim(test5, threshold = thr[,2])
