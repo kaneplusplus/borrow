@@ -14,11 +14,12 @@ summary.borrow_multiple <- function(object, ...) {
   ind <- object$drug_index
   dat <- object$data
   numInd <- length(ind)
-  MAP <- PEP <- matrix(0, 0, numInd)
+
   post.prob <- ESS <- mean_est <- median_est<-c()
   HPD <- matrix(0, 2, 0)
   allName <- dat[[1]]$name
   indexName <- allName[ind]
+  MAP <- PEP <- matrix(0, 0, length(allName))
   # vemu_wide1$responders/vemu_wide1$evaluable
   for(i in 1:numInd)
   {

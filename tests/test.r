@@ -76,7 +76,7 @@ test4 <- borrow_multiple(
   responses = vemu_wide1$responders,
   size = vemu_wide1$evaluable,
   name = vemu_wide1$baskets,
-  drug_index = 1:6, 
+  drug_index = 2:3, 
   p0 = 0.25
 )
 summary(test4)
@@ -92,9 +92,13 @@ numCores <- detectCores()
 numCores
 registerDoParallel(numCores)
 
-tr <-  c(rep(0.1, 3), rep(0.3, 3))
+resp <- vemu_wide1$responders
+resp[1:2] <- rep(0.1, 2)
+resp[4] <- 0.3
+resp
 test5 <- borrow_simulate(
-  true_rate =  tr,
+  resp =  resp,
+  is.resp.rate = c(TRUE, TRUE, FALSE, TRUE, FALSE, FALSE),
   size = vemu_wide1$evaluable,
   name = vemu_wide1$baskets,
   drug_index = c(2, 4), 

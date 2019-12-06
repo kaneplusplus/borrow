@@ -2,7 +2,8 @@
 
 #' @title borrow simulation
 #' @description borrow trial simulations for multiple subgroups using borrow method.
-#' @param true_rate the true response rates in each basket.
+#' @param resp the response outcome or the true response rates in each basket.
+#' @param is.resp.rate the vector to indicate if the true_rate is response rate (FALSE means the resp value is response outcome)
 #' @param size the size of each basket.
 #' @param name the name of each basket.
 #' @param drug_index the index vector of the basket to be studied.
@@ -46,7 +47,8 @@
 #' @importFrom foreach foreach
 #' @importFrom itertools isplitRows
 #' @export
-borrow_simulate <- function(true_rate,
+borrow_simulate <- function(resp,
+                      is.resp.rate,      
                       size,
                       name,
                       drug_index,
@@ -59,9 +61,9 @@ borrow_simulate <- function(true_rate,
                       alternative = "greater",
                       call = NULL) {
   
-  if (length(true_rate) != length(size)) {
+  if (length(resp) != length(size)) {
     stop(red(
-      "The length of the true response rates and size parameters",
+      "The length of the response and size parameters",
       "must be equal."
     ))
   }
@@ -69,15 +71,16 @@ borrow_simulate <- function(true_rate,
   numGroup <- length(size)
   allResp <- matrix(0, num_sim, 0)
   for(i in 1:numGroup){
-    allResp <- cbind(allResp, rbinom(num_sim, size[i], true_rate[i]))
+    if(is.resp.rate[i]){
+       allResp <- cbind(allResp, rbinom(num_sim, size[i], resp[i]))
+    } else {
+       allResp <- cbind(allResp, rep(resp[i], num_sim))
+    }
+       
   }
 
   allResu <- list()
-  for (i in 1:num_sim)
-  {
 
-
-  }
   
   allResu <- foreach(i = 1:num_sim, .combine = 'c') %dopar% {
     
@@ -98,7 +101,7 @@ borrow_simulate <- function(true_rate,
     list(t)
   }
 
-  ret <- list(data = allResu, drug_index = drug_index, true_rate = true_rate, allResp = allResp)
+  ret <- list(data = allResu, name = name,  drug_index = drug_index, resp = resp, is.resp.rate = is.resp.rate, size = size, allResp = allResp)
   class(ret) <- c("borrow_simulate", "exchangeability_model")
   return(ret)
 }
