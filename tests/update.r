@@ -1,4 +1,55 @@
-MAP <- PEP <- matrix(0, 0, length(allName))
+
+summary.borrow_simulate <- function(object, ...) {
+  simResult <- object
+  data <- simResult$data
+  numSim <- length(data)
+  #r <- data[[1]]
+  index <- simResult$drug_index
+  numInd <- length(index)
+  
+  allPostProb <- allESS  <- matrix(0, 0, numInd)
+  for (i in 1:numSim){
+    allPostProb <- rbind(allPostProb, data[[i]]$post.prob)
+    allESS <- rbind(allESS, data[[i]]$ESS)
+  }
+  allMap <- data[[1]]$MAP
+  for (i in 2:numSim){
+    allMap <- allMap + data[[i]]$MAP
+  }  
+  allMap <- allMap / numSim
+  post.bound <- colQuantiles(allPostProb, probs = c(0.25, 0.75))
+  postmean <- colMeans(allPostProb)
+  ess.bound <- colQuantiles(allESS, probs = c(0.25, 0.75))
+  essmean <- colMeans(allESS)
+  res <- cbind(postmean, post.bound, essmean, ess.bound)
+  colnames(res) <- c("Post.prob Mean", "Post.prob 25%", "Post.prob 75%", "ESS Mean",  "ESS 25%", "ESS75%")
+  list(num_sim = numSim, Avg.MAP = allMap, name = simResult$name,  drug_index = simResult$drug_index, 
+       resp = simResult$resp, is.resp.rate = simResult$is.resp.rate, size = simResult$size, result = res)
+}
+
+# OC curve
+ocCurve <- function(nullData, alterData)
+{
+  allData <- c(nullData, alterData)
+  allData <- unique(allData)
+  cutoff <- sort(allData)
+  typeIError <- c()
+  powerVal <- c()
+  numNull <- length(nullData)
+  numAlter <- length(alterData)
+  for(i in 1:length(cutoff)){
+    t1 <- sum(nullData >= cutoff[i]) / numNull
+    po <- sum(alterData >= cutoff[i]) / numAlter
+    typeIError <- c(typeIError, t1)
+    powerVal <- c(powerVal, po) 
+  }
+  res <- data.frame(cutoff, typeIError, powerVal)
+}
+
+plot.occurve <- function(res)
+{
+  plot(res$typeIError, res$powerVal, xlab = "Type I error Rate", ylab = "Power", type ="o")
+}
 
 library(matrixStats)
 calibrate <- function(simResult, prob = c(0.1, 0.8))
@@ -14,9 +65,7 @@ calibrate <- function(simResult, prob = c(0.1, 0.8))
     allPostProb <- rbind(allPostProb, data[[i]]$post.prob)
   }
   thr <- colQuantiles(allPostProb, probs = prob)
-  
   thr
-  
 }
 
 
@@ -59,3 +108,21 @@ plot_sim <- function(simResult, threshold)
   }
   p
 }
+
+# 
+# library(pROC)
+# data(aSAH)
+# if(!require(DT)) install.packages("DT")
+# DT::datatable(aSAH)
+# 
+# 
+# rocobj <- plot.roc(aSAH$outcome, aSAH$s100b, percent = TRUE, main = "Smoothing")
+# lines(smooth(rocobj), # smoothing (default: binormal)
+#       col = "#1c61b6")
+# lines(smooth(rocobj, 
+#              method = "density"), # density smoothing
+#       col = "#008600")
+# lines(smooth(rocobj, 
+#              method = "fitdistr", # fit a distribution
+#              density = "lognormal"), # let the distribution be log-normal
+#       col = "#840000")
