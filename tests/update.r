@@ -48,7 +48,34 @@ ocCurve <- function(nullData, alterData)
 
 plot.occurve <- function(res)
 {
-  plot(res$typeIError, res$powerVal, xlab = "Type I error Rate", ylab = "Power", type ="o")
+  #plot(res$typeIError, res$powerVal, xlab = "Type I error Rate", ylab = "Power", type ="o")
+  g <- ggplot(res, aes(x=typeIError, y=powerVal)) +
+    geom_point(size=2, shape=23) +
+    geom_path(size = 1)+
+    xlab("Type I Error ") +
+    ylab("Power")
+  g
+}
+
+cali.onPower<- function(res, powerV = c(0.7, 0.8, 0.9))
+{
+  p <- powerV
+  sm <- smooth.spline(res$powerVal, res$typeIError,  spar = 0.3)
+  predTError <- predict(sm, x = p)$y
+  x <- (1:1000)/1000
+  predAll <- predict(sm, x = x)$y 
+  smCurve <- data.frame(x, predAll)
+  
+  smCutoff <- smooth.spline(res$powerVal, res$cutoff,  spar = 0.3)
+  
+  predCutoff <- predict(smCutoff, x = p)$y
+  # n <- 10
+  # d <- data.frame(x = 1:n, y = rnorm(n))
+  # ggplot(d,aes(x,y)) + geom_point() + 
+  #   geom_line(data=data.frame(spline(d, n=n*10)))
+  
+  plot.occurve(res) + geom_line(data=smCurve, aes(predAll, x), color="blue", size =1)
+  data.frame(powerV, predCutoff, predTError)
 }
 
 library(matrixStats)
