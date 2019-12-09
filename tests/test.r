@@ -107,7 +107,17 @@ test5 <- borrow_simulate(
 )
 #saveRDS(test5, "simres.rds")
 
-summary(test5)
+r <- summary(test5)
+print(r)
 thr <- calibrate(test5, prob= (1:9)/ 10)
 thr
 plot_sim(test5, threshold = thr[,2])
+
+# OC curve
+oc <- ocCurve(nullData = r$allPostProb[,1], alterData= r$allPostProb[,2])
+oc
+plot.occurve(oc) 
+cali.onPower(oc, powerV = c(0.7, 0.8, 0.9))
+cali.onTypeIError(oc, typeIError = c(0.1, 0.2, 0.3))
+
+

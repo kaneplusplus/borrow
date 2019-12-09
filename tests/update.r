@@ -23,8 +23,9 @@ summary.borrow_simulate <- function(object, ...) {
   essmean <- colMeans(allESS)
   res <- cbind(postmean, post.bound, essmean, ess.bound)
   colnames(res) <- c("Post.prob Mean", "Post.prob 25%", "Post.prob 75%", "ESS Mean",  "ESS 25%", "ESS75%")
-  list(num_sim = numSim, Avg.MAP = allMap, name = simResult$name,  drug_index = simResult$drug_index, 
-       resp = simResult$resp, is.resp.rate = simResult$is.resp.rate, size = simResult$size, result = res)
+  list(num_sim = numSim, name = simResult$name,  drug_index = simResult$drug_index, 
+       resp = simResult$resp, is.resp.rate = simResult$is.resp.rate, size = simResult$size, 
+       allPostProb = allPostProb, allESS = allESS, Avg.MAP = allMap,  result = res)
 }
 
 # OC curve
@@ -68,15 +69,39 @@ cali.onPower<- function(res, powerV = c(0.7, 0.8, 0.9))
   
   smCutoff <- smooth.spline(res$powerVal, res$cutoff,  spar = 0.3)
   
-  predCutoff <- predict(smCutoff, x = p)$y
+  Cutoff <- predict(smCutoff, x = p)$y
   # n <- 10
   # d <- data.frame(x = 1:n, y = rnorm(n))
   # ggplot(d,aes(x,y)) + geom_point() + 
   #   geom_line(data=data.frame(spline(d, n=n*10)))
   
-  plot.occurve(res) + geom_line(data=smCurve, aes(predAll, x), color="blue", size =1)
-  data.frame(powerV, predCutoff, predTError)
+  p <- plot.occurve(res) + geom_line(data=smCurve, aes(predAll, x), color="blue", size =1)
+  print(p)
+  data.frame(powerV, Cutoff, predTError)
 }
+
+cali.onTypeIError<- function(res, typeIError = c(0.1, 0.2, 0.3))
+{
+  p <- typeIError
+  sm <- smooth.spline(res$typeIError, res$powerVal, spar = 0.3)
+  predPower <- predict(sm, x = p)$y
+  x <- (1:1000)/1000
+  predAll <- predict(sm, x = x)$y 
+  smCurve <- data.frame(x, predAll)
+  
+  smCutoff <- smooth.spline(res$typeIError, res$cutoff,  spar = 0.3)
+  
+  Cutoff <- predict(smCutoff, x = p)$y
+  # n <- 10
+  # d <- data.frame(x = 1:n, y = rnorm(n))
+  # ggplot(d,aes(x,y)) + geom_point() + <- 
+  #   geom_line(data=data.frame(spline(d, n=n*10)))
+  
+  p <- plot.occurve(res) + geom_line(data=smCurve, aes(x,predAll), color="blue", size =1)
+  print(p)
+  data.frame(typeIError, predCutoff, predPower)
+}
+
 
 library(matrixStats)
 calibrate <- function(simResult, prob = c(0.1, 0.8))
