@@ -198,7 +198,7 @@ plot_sim_violin <- function(simResult)
   # #plot.XY(X, Y, x_name="Posterior Prob", y_name="Basket", pl.main=NULL, geom_violin.trim = TRUE, coord_flip=TRUE)
   # 
   # 
-   
+   #browser()
   plot.XY(dfAll$Post.prob, dfAll$name, y_name="Baskets", x_name="Posterior Prob", pl.main=NULL, geom_violin.trim = TRUE, coord_flip=FALSE)
 }
 
@@ -211,6 +211,7 @@ plot_sim_violin <- function(simResult)
 
 
 nLevels <- function(x){ return( sapply(X=levels(x), FUN=function(X,s) length(which(s==X)), s=x) ) }
+
 
 append.n <- function(y){ n <- nLevels(y); y. <- as.character(y)
 for(i in 1:length(levels(y))){ 
@@ -229,6 +230,7 @@ signDigit <- function(x){
   return(out)
 }
 
+
 Kruskal <- function(U,cl.ORD=NA){
   g <- U$g; y <- U$y
   L <- levels(g)
@@ -244,8 +246,9 @@ Kruskal <- function(U,cl.ORD=NA){
   if(!is.na(cl.ORD)[1]){ R <- R[cl.ORD,]; rownames(R) <- paste0("cluster-",cl.ORD) }
   #write.csv(R,"R.csv")
   #print(paste("N = ",dim(na.omit(cbind(g,y)))[1],sep=""))
-  return
+  return(R)
 }
+
 trunc.Factors <- function(X,Start=5){
   n <- length(levels(X)); s <- nLevels(X)
   w <- Start
@@ -510,7 +513,6 @@ plot.XY <- function(X, Y, x_name="", y_name="", pl.main=NULL, Part.numeric.X=FAL
   
   return(out)
 }
-
 
 
 
