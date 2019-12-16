@@ -1,0 +1,195 @@
+
+---
+title: "Examples with the \"borrow\" Package"
+author: "Nan Chen"
+date: "Dec. 15, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Study Data
+
+In this study, we use the vemu data to illustrate the usages of the borrow package. The dat set is:
+
+
+```{r echo=FALSE, results = 'vemudata'}
+#library(testthat)
+library(basket)
+#library(tidyr)
+#library(tibble)
+library(ggplot2)
+library(borrow)
+#source("update.r")
+
+data(vemu_wide)
+vemu_wide1 <- data.frame(baskets = vemu_wide$baskets, evaluable= vemu_wide$evaluable, responders = vemu_wide$responders)
+
+dat <- data.frame( vemu_wide1)
+library(knitr)
+kable(dat, caption="Summary of Response Data", align='lcc', row.names=F, format='html')
+```
+
+
+  ## borrow Package: Single Subgroup Estimation Example
+
+With the single subgroup estimationo, we can conduct the analysis of the subgroup we are interested, For instance, if we are interested in the subgroup 2,  we can calculate the MAP and the PEP of the subgroup with other subgroups. We can also estimate posterior probability $p(\theta_i>p_0)$, the effective sample size (ESS).
+
+```{r borrow_ex, message=FALSE}
+library(borrow)
+
+# drug_index is the index number of the basket we are interested
+exact_single <- mem_single(
+    responses = vemu_wide1$responders,
+    size = vemu_wide1$evaluable,
+    name = vemu_wide1$baskets,
+    drug_index = 2, 
+    p0 = 0.25
+  )
+
+exact_single$PEP
+
+summary(exact_single)
+
+```
+
+
+## borrow Package: Multiple Subgroups Estimation Example
+
+We can conduct the analysis of multiple subgroups in the trial. For instance,if we are interested in the subgroup 2 and 3, we can perform this calculation:
+
+
+```{r borrow_ex1, message=FALSE}
+
+testMult <- borrow_multiple(
+  responses = vemu_wide1$responders,
+  size = vemu_wide1$evaluable,
+  name = vemu_wide1$baskets,
+  drug_index = 2:3, 
+  p0 = 0.25
+)
+summary(testMult)
+
+```
+
+
+We can conduct the analysis of all subgroups with the multiple subgroup calculation for the trial. For instance,
+
+
+```{r borrow_ex2, message=FALSE}
+
+testMult1 <- borrow_multiple(
+  responses = vemu_wide1$responders,
+  size = vemu_wide1$evaluable,
+  name = vemu_wide1$baskets,
+  drug_index = 1:6, 
+  p0 = 0.25
+)
+
+res <- summary(testMult1)$PEP
+summary(testMult1)$post.prob
+dat <- data.frame(res)
+library(knitr)
+kable(dat, caption="Summary of Posterior Probabilities", align='lcc', row.names=F, format='html')
+```
+
+\newline \newline
+
+We can also obtain the informationo of ESS of all subgroups:
+```{r borrow_exess, message=FALSE}
+ess <- summary(testMult1)$ESS
+df <- data.frame(baskets = vemu_wide1$baskets, ESS = ess)
+
+p<-ggplot(df, aes(x=baskets, y=ESS, fill = baskets)) + labs(y = "ESS")+
+  geom_bar(stat="identity")+theme(axis.title.x = element_blank())
+
+p
+
+```
+
+
+## borrow Package: Trial Simulation Example
+
+We can use this package to conduct the simulation based trial design. The simulator supports parallel computation and users can use multiple CPU cores for simulation conduction. In the trial simulation, some basket responses are known and those responses are fixed in the simulation. In the input, we set the is.resp.rate of these subgroups as FALSE and the resp variable as the response outcome. Responses of some subgroups are unknown and we set the is.resp.rate of these subgroups as TRUE and the resp variable as the true response rates in the simulation. For instance, we would like to perform a trial simulation with 100 runs, subgroups 1, 2, and 4 are with unknown outcomes: 
+
+```{r borrow_exsim, eval= FALSE, message=FALSE}
+
+library(doParallel)
+library(foreach)
+
+numCores <- detectCores()
+registerDoParallel(numCores)
+
+resp <- vemu_wide1$responders
+resp[1:2] <- rep(0.1, 2)
+resp[4] <- 0.3
+testSim <- borrow_simulate(
+  resp =  resp,
+  is.resp.rate = c(TRUE, TRUE, FALSE, TRUE, FALSE, FALSE),
+  size = vemu_wide1$evaluable,
+  name = vemu_wide1$baskets,
+  drug_index = c(2, 4), 
+  p0 = 0.2,
+  num_sim = 100
+)
+
+```
+
+Users can access the data of each individual trial simulation. For example, one can access the PEP of the 20th trial simlation:
+
+
+```{r borrow_SimRes1,  message=FALSE}
+source("update.r")
+testSim <- readRDS("testSim.rds")
+
+print(testSim$data[[20]]$PEP)
+```
+
+One can also summarize the results of all simulations.
+
+```{r borrow_SimRes2,  message=FALSE}
+res <- summary(testSim)
+res$Avg.MAP
+s <- res$result
+dat <- data.frame(s)
+library(knitr)
+kable(dat, caption="Summary of Simulation Results", align='lcc', row.names=F, format='html')
+
+```
+
+One can plot the posteror probability distribution use the density plot or violin plot
+
+```{r borrow_SimRes3, message=FALSE}
+
+plot_sim(testSim, threshold = c(0.1, 0.1))
+plot_sim_violin(testSim)
+
+```
+
+
+
+
+## borrow Package: Threshold Value Calibration Example
+
+One can use the simulation results to calibrate the threshold values based on the Type I error or the power values. 
+
+```{r borrow_SimCali,  message=FALSE}
+
+oc <- ocCurve(nullData = res$allPostProb[,1], alterData= res$allPostProb[,2])
+plot.occurve(oc) 
+t1 <- cali.onPower(oc, powerV = c(0.7, 0.8, 0.9))
+t2 <- cali.onTypeIError(oc, typeIError = c(0.1, 0.2, 0.3))
+dat <- data.frame(t1)
+library(knitr)
+kable(dat, caption="Summary of Calibration based on Power", align='lcc', row.names=F, format='html')
+
+dat <- data.frame(t2)
+
+kable(dat, caption="Summary of Calibration based on Type I Error", align='lcc', row.names=F, format='html')
+
+```
+
+
+

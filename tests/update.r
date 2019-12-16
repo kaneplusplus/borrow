@@ -1,4 +1,7 @@
 
+library(stringr)
+library(ggplot2)
+library(dplyr)
 summary.borrow_simulate <- function(object, ...) {
   simResult <- object
   data <- simResult$data
@@ -81,7 +84,7 @@ cali.onPower<- function(res, powerV = c(0.7, 0.8, 0.9))
   
   p <- plot.occurve(res) + geom_line(data=smCurve, aes(predAll, x), color="blue", size =1)
   print(p)
-  data.frame(powerV, round(Cutoff, 3), round(predTError, 3))
+  data.frame(Power=powerV, Cutoff=round(Cutoff, 3), Pred.TError=round(predTError, 3))
 }
 
 cali.onTypeIError<- function(res, typeIError = c(0.1, 0.2, 0.3))
@@ -103,7 +106,7 @@ cali.onTypeIError<- function(res, typeIError = c(0.1, 0.2, 0.3))
   
   p <- plot.occurve(res) + geom_line(data=smCurve, aes(x,predAll), color="blue", size =1)
   print(p)
-  data.frame(typeIError, round(predCutoff , 3), round(predPower, 3))
+  data.frame(TError = typeIError, Cutoff = round(Cutoff , 3), Pred.Power=round(predPower, 3))
 }
 
 
@@ -206,9 +209,6 @@ plot_sim_violin <- function(simResult)
 # if(!require(DT)) install.packages("DT")
 
 
-library(stringr)
-library(ggplot2)
-library(dplyr)
 
 nLevels <- function(x){ return( sapply(X=levels(x), FUN=function(X,s) length(which(s==X)), s=x) ) }
 
@@ -244,7 +244,17 @@ Kruskal <- function(U,cl.ORD=NA){
   if(!is.na(cl.ORD)[1]){ R <- R[cl.ORD,]; rownames(R) <- paste0("cluster-",cl.ORD) }
   #write.csv(R,"R.csv")
   #print(paste("N = ",dim(na.omit(cbind(g,y)))[1],sep=""))
-  return(R)
+  return
+}
+trunc.Factors <- function(X,Start=5){
+  n <- length(levels(X)); s <- nLevels(X)
+  w <- Start
+  X. <- X; levels(X.) <- str_trim(str_sub(levels(X), start = 1, end = w))  
+  while( n!=length(levels(X.)) || s!=nLevels(X.) ){
+    w <- w + 1
+    X. <- X; levels(X.) <- str_trim(str_sub(levels(X), start = 1, end = w))
+  }
+  return(X.)
 }
 
 plot.XY <- function(X, Y, x_name="", y_name="", pl.main=NULL, Part.numeric.X=FALSE, 

@@ -50,6 +50,7 @@ summary(x)
 
 
 
+
 test2 <- mem_single(
   responses = c(3,4,10,9,2,11),
   size = rep(25, 6),
@@ -84,9 +85,35 @@ summary(test4)
 
 
 
+
+
+testMult1 <- borrow_multiple(
+  responses = vemu_wide1$responders,
+  size = vemu_wide1$evaluable,
+  name = vemu_wide1$baskets,
+  drug_index = 1:6, 
+  p0 = 0.25
+)
+
+res <- summary(testMult1)$PEP
+summary(testMult1)$post.prob
+dat <- data.frame(res)
+library(knitr)
+kable(dat, caption="Summary of Posterior Probabilities", align='lcc', row.names=F, format='html')
+
+ess <- summary(testMult1)$ESS
+df <- data.frame(baskets = vemu_wide1$baskets, ESS = ess)
+
+p<-ggplot(df, aes(x=baskets, y=ESS, fill = baskets)) + labs(y = "ESS")+
+  geom_bar(stat="identity")+theme(axis.title.x = element_blank())+
+  geom_hline(yintercept=0.05, linetype="dashed", color = "red")
+p
+
+
+
+
 library(doParallel)
 library(foreach)
-
 
 numCores <- detectCores()
 numCores
@@ -109,9 +136,11 @@ test5 <- borrow_simulate(
 
 r <- summary(test5)
 print(r)
-thr <- calibrate(test5, prob= (1:9)/ 10)
-thr
-plot_sim(test5, threshold = thr[,2])
+# thr <- calibrate(test5, prob= (1:9)/ 10)
+# thr
+# plot_sim(test5, threshold = thr[,2])
+plot_sim_violin(test5)
+
 
 # OC curve
 oc <- ocCurve(nullData = r$allPostProb[,1], alterData= r$allPostProb[,2])
