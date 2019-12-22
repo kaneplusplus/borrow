@@ -2,6 +2,37 @@
 library(stringr)
 library(ggplot2)
 library(dplyr)
+
+borrow_simulate_multiple <- function(
+  resp.scenarios,
+  is.resp.rate = c(TRUE, TRUE, FALSE, TRUE, FALSE, FALSE),
+  size = vemu_wide1$evaluable,
+  name,
+  drug_index, 
+  p0,
+  num_sim = 100,
+  output.file = "out.rds"
+)
+{
+  res <- list()
+  sce.num <- dim(resp.scenarios)[1]
+  for (i in 1:sce.num) {
+    r <- borrow_simulate(
+      resp =  resp.scenarios[i,],
+      is.resp.rate = is.resp.rate,
+      size = size,
+      name = name,
+      drug_index = drug_index,
+      p0 = p0,
+      num_sim = num_sim
+    )
+    sre <- list(result = r, resp = resp.scenarios[i,])
+    res[[i]] <- sre
+    saveRDS(res, output.file)
+  }
+  return(res)
+}
+
 summary.borrow_simulate <- function(object, ...) {
   simResult <- object
   data <- simResult$data

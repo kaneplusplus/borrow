@@ -150,3 +150,19 @@ cali.onPower(oc, powerV = c(0.7, 0.8, 0.9))
 cali.onTypeIError(oc, typeIError = c(0.1, 0.2, 0.3))
 
 
+resp1 <- c(0.1, 0.1, 1.0, 0.3, 6.0, 2.0)
+resp2 <- c(0.3, 0.1, 1.0, 0.3, 6.0, 2.0)
+resp3 <- c(0.1, 0.2, 1.0, 0.3, 6.0, 2.0)
+resp4 <- c(0.3, 0.3, 1.0, 0.3, 6.0, 2.0)
+
+resps <- rbind(resp1, resp2, resp3, resp4)
+test6 <- borrow_simulate_multiple(
+  resp.scenarios = resps,
+  is.resp.rate = c(TRUE, TRUE, FALSE, TRUE, FALSE, FALSE),
+  size = vemu_wide1$evaluable,
+  name = vemu_wide1$baskets,
+  drug_index = c(2, 4), 
+  p0 = 0.2,
+  num_sim = 30,
+  output.file = "testresult.RDS"
+)
