@@ -7,6 +7,7 @@
 #' @param size the size of each basket.
 #' @param name the name of each basket.
 #' @param drug_index the index vector of the basket to be studied.
+#' @interim_size basket sizes for interim analyses 
 #' @param p0 the null response rate vector for the poster probability calculation
 #' (default 0.15).
 #' @param num_sim the number of simulationst
@@ -52,6 +53,7 @@ borrow_simulate <- function(resp,
                       size,
                       name,
                       drug_index,
+                      interim_size = NA,
                       p0 = 0.15,
                       num_sim =100,
                       shape1 = 0.5,
@@ -69,24 +71,65 @@ borrow_simulate <- function(resp,
   }
 
   numGroup <- length(size)
-  allResp <- matrix(0, num_sim, 0)
-  for(i in 1:numGroup){
-    if(is.resp.rate[i]){
-       allResp <- cbind(allResp, rbinom(num_sim, size[i], resp[i]))
-    } else {
-       allResp <- cbind(allResp, rep(resp[i], num_sim))
-    }
-       
-  }
+  allResp <- matrix(0, num_sim, numGroup)
 
-  allResu <- list()
-
-  
-  allResu <- foreach(i = 1:num_sim, .combine = 'c') %dopar% {
-    
-    resp <- allResp[i, ]
+#browser()
  
-    r <- borrow_multiple(responses =  resp,
+  allResu <- foreach(i = 1:num_sim, .combine = 'c') %dopar% {
+    intRes <- list()
+    if (!is.na(interim_size)){
+      
+      respC <- rep(0, numGroup)
+      sizeC <- rep(0, numGroup)
+      for(ii in 1:length(interim_size)){
+        resS <- c()
+        total <- c()
+        for(j in 1:numGroup){
+          if(is.resp.rate[j]){
+            total <- c(total, interim_size[ii])
+            resS <- c(resS, respC[j] + rbinom(1, interim_size[ii] - sizeC[j], resp[j]))
+          } else {
+            total <- c(total, size[j])
+            resS <- c(resS, resp[j])           
+          }
+        }
+        r <- borrow_multiple(responses =  resS,
+                             size = total,
+                             name = name,
+                             drug_index = drug_index,
+                             p0 = p0,
+                             shape1 = shape1,
+                             shape2 = shape2,
+                             prior = prior,
+                             hpd_alpha = hpd_alpha,
+                             alternative = alternative)
+        
+        t <- summary(r)
+        intRes[[ii]] <- list( res = t, size = total, resp = resS)
+        respC <- resS
+        sizeC <- total
+      }
+      allR <- c()
+      for(j in 1:numGroup){
+        if(is.resp.rate[j]){
+          allR<- c(allR, respC[j] + rbinom(1, size[j] - sizeC[j], resp[j]))
+        } else {
+          allR <- c(allR, resp[j])
+        }
+      }
+      
+    }else{
+      allR <- c()
+      for(j in 1:numGroup){
+        if(is.resp.rate[j]){
+          allR<- c(allR, rbinom(1, size[j], resp[j]))
+        } else {
+          allR <- c(allR, resp[j])
+        }
+      }
+    }
+    
+    r <- borrow_multiple(responses =  allR,
                          size = size,
                          name = name,
                          drug_index = drug_index,
@@ -98,10 +141,11 @@ borrow_simulate <- function(resp,
                          alternative = alternative
     )
     t <- summary(r)
-    list(t)
+    res <- list(t = t, interim_res = intRes, finalResp = allR)
+    list(res)
   }
 
-  ret <- list(data = allResu, name = name,  drug_index = drug_index, resp = resp, is.resp.rate = is.resp.rate, size = size, allResp = allResp)
+  ret <- list(data = allResu, name = name,  drug_index = drug_index, interim_size = interim_size, resp = resp, is.resp.rate = is.resp.rate, size = size)
   class(ret) <- c("borrow_simulate", "exchangeability_model")
   return(ret)
 }

@@ -166,3 +166,22 @@ test6 <- borrow_simulate_multiple(
   num_sim = 30,
   output.file = "testresult.RDS"
 )
+
+
+library(doParallel)
+library(foreach)
+
+numCores <- detectCores()
+numCores
+registerDoParallel(numCores)
+
+test7 <- borrow_simulate(
+  resp =  resp,
+  is.resp.rate = c(TRUE, TRUE, FALSE, TRUE, FALSE, FALSE),
+  size = vemu_wide1$evaluable,
+  name = vemu_wide1$baskets,
+  drug_index = c(2, 4), 
+  interim_size = c(4,5),
+  p0 = 0.2,
+  num_sim = 8
+)
