@@ -1,6 +1,6 @@
 Package: borrow
 Title: Borrow Power from Historical Clinical Trials
-Version: 0.4.0
+Version: 0.7.0
 Authors@R: c(
   person("Nan", "Chen",
          email = "nchen2@mdanderson.org",

@@ -4,13 +4,15 @@
 \alias{borrow_simulate}
 \title{borrow simulation}
 \usage{
-borrow_simulate(true_rate, size, name, drug_index, p0 = 0.15,
-  num_sim = 100, shape1 = 0.5, shape2 = 0.5, prior = rep(1,
-  length(size))/2, hpd_alpha = 0.05, alternative = "greater",
-  call = NULL)
+borrow_simulate(resp, is.resp.rate, size, name, drug_index,
+  interim_size = NA, p0 = 0.15, num_sim = 100, shape1 = 0.5,
+  shape2 = 0.5, prior = rep(1, length(size))/2, hpd_alpha = 0.05,
+  alternative = "greater", call = NULL)
 }
 \arguments{
-\item{true_rate}{the true response rates in each basket.}
+\item{resp}{the response outcome or the true response rates in each basket.}
+
+\item{is.resp.rate}{the vector to indicate if the true_rate is response rate (FALSE means the resp value is response outcome)}
 
 \item{size}{the size of each basket.}
 
