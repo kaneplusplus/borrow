@@ -3,6 +3,8 @@ library(stringr)
 library(ggplot2)
 library(dplyr)
 
+library(matrixStats)
+
 borrow_simulate_multiple <- function(
   resp.scenarios,
   is.resp.rate = c(TRUE, TRUE, FALSE, TRUE, FALSE, FALSE),
@@ -37,19 +39,38 @@ summary.borrow_simulate <- function(object, ...) {
   simResult <- object
   data <- simResult$data
   numSim <- length(data)
+
   #r <- data[[1]]
   index <- simResult$drug_index
   numInd <- length(index)
   
   allPostProb <- allESS  <- matrix(0, 0, numInd)
   for (i in 1:numSim){
-    allPostProb <- rbind(allPostProb, data[[i]]$post.prob)
-    allESS <- rbind(allESS, data[[i]]$ESS)
+    allPostProb <- rbind(allPostProb, data[[i]]$t$post.prob)
+    allESS <- rbind(allESS, data[[i]]$t$ESS)
   }
-  allMap <- data[[1]]$MAP
+  allMap <- data[[1]]$t$MAP
   for (i in 2:numSim){
-    allMap <- allMap + data[[i]]$MAP
-  }  
+    allMap <- allMap + data[[i]]$t$MAP
+  }
+
+  if(sum(is.na(simResult$interim_size)) == 0)
+  {
+    numIntm <- length(simResult$interim_size)
+    interimProb <- array(0, dim=c(numIntm, numSim, numInd))
+    #browser()
+    for (m in 1:numIntm) {
+      for (i in 1:numSim) {
+        rr <- data[[i]]$interim_res
+        # cat(m, i)
+        # print(rr)
+        d <- rr[[m]]$res$post.prob
+        interimProb[m, i,] <- d
+      }
+    }
+  }else{
+    interimProb <- NA
+  }
   allMap <- allMap / numSim
   post.bound <- colQuantiles(allPostProb, probs = c(0.25, 0.75))
   postmean <- colMeans(allPostProb)
@@ -59,7 +80,7 @@ summary.borrow_simulate <- function(object, ...) {
   colnames(res) <- c("Post.prob Mean", "Post.prob 25%", "Post.prob 75%", "ESS Mean",  "ESS 25%", "ESS75%")
   list(num_sim = numSim, name = simResult$name,  drug_index = simResult$drug_index, 
        resp = simResult$resp, is.resp.rate = simResult$is.resp.rate, size = simResult$size, 
-       allPostProb = allPostProb, allESS = allESS, Avg.MAP = allMap,  result = res)
+       allPostProb = allPostProb, allESS = allESS, Avg.MAP = allMap, interimProb = interimProb,  result = res)
 }
 
 # OC curve
@@ -141,7 +162,6 @@ cali.onTypeIError<- function(res, typeIError = c(0.1, 0.2, 0.3))
 }
 
 
-library(matrixStats)
 calibrate <- function(simResult, prob = c(0.1, 0.8))
 {
   data <- simResult$data
@@ -169,10 +189,17 @@ plot_sim <- function(simResult, threshold)
   index <- simResult$drug_index
   numInd <- length(index)
   
-  allPostProb <- matrix(0, 0, numInd)
+  # allPostProb <- matrix(0, 0, numInd)
+  # for (i in 1:numSim){
+  #   allPostProb <- rbind(allPostProb, data[[i]]$post.prob)
+  # }
+  
+  allPostProb <- allESS  <- matrix(0, 0, numInd)
   for (i in 1:numSim){
-    allPostProb <- rbind(allPostProb, data[[i]]$post.prob)
+    allPostProb <- rbind(allPostProb, data[[i]]$t$post.prob)
+    allESS <- rbind(allESS, data[[i]]$t$ESS)
   }
+  
   
   allP <- allPostProb
   nDim <- dim(allP)
@@ -207,9 +234,15 @@ plot_sim_violin <- function(simResult)
   index <- simResult$drug_index
   numInd <- length(index)
   
-  allPostProb <- matrix(0, 0, numInd)
+  # allPostProb <- matrix(0, 0, numInd)
+  # for (i in 1:numSim){
+  #   allPostProb <- rbind(allPostProb, data[[i]]$post.prob)
+  # }
+  
+  allPostProb <- allESS  <- matrix(0, 0, numInd)
   for (i in 1:numSim){
-    allPostProb <- rbind(allPostProb, data[[i]]$post.prob)
+    allPostProb <- rbind(allPostProb, data[[i]]$t$post.prob)
+    allESS <- rbind(allESS, data[[i]]$t$ESS)
   }
   
   allP <- allPostProb

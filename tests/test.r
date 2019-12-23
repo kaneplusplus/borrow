@@ -183,5 +183,11 @@ test7 <- borrow_simulate(
   drug_index = c(2, 4), 
   interim_size = c(4,5),
   p0 = 0.2,
-  num_sim = 8
+  num_sim = 24
 )
+
+
+r <- summary(test7)
+print(r)
+plot_sim_violin(test7)
+plot_sim_interim_violin(test7, interim = 2)
