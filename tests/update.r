@@ -226,6 +226,50 @@ plot_sim <- function(simResult, threshold)
   p
 }
 
+plot_sim_interim_violin <- function(simResult, interim = 1)
+{
+  data <- simResult$data
+  numSim <- length(data)
+
+  index <- simResult$drug_index
+  numInd <- length(index)
+
+  
+  if(sum(is.na(simResult$interim_size)) == 0)
+  {
+    numIntm <- length(simResult$interim_size)
+    interimProb <- array(0, dim=c(numIntm, numSim, numInd))
+    #browser()
+    for (m in 1:numIntm) {
+      for (i in 1:numSim) {
+        rr <- data[[i]]$interim_res
+        # cat(m, i)
+        # print(rr)
+        d <- rr[[m]]$res$post.prob
+        interimProb[m, i,] <- d
+      }
+    }
+  }else{
+    return()
+  }
+  
+  allP <- allPostProb
+  allP <- interimProb[interim,,]
+  nDim <- dim(allP)
+  dfAll <- data.frame(name=character(),
+                      Post.prob=double())
+  allName <- simResult$name
+  for(i in 1:nDim[2])
+  {
+    nameS <- allName[i]
+    df <- data.frame(name=rep(nameS, nDim[1]), Post.prob=allP[,i])
+    dfAll <-rbind(dfAll, df)
+  }
+
+  plot.XY(dfAll$Post.prob, dfAll$name, y_name="Baskets", x_name="Posterior Prob", pl.main=NULL, geom_violin.trim = TRUE, coord_flip=FALSE)
+}
+
+
 plot_sim_violin <- function(simResult)
 {
   data <- simResult$data
