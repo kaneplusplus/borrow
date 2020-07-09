@@ -6,7 +6,7 @@
 #' @param responses the number of responses in each basket.
 #' @param size the size of each basket.
 #' @param name the name of each basket.
-#' @param drug_index the index vector of the basket to be studied.
+#' @param drug_index the index vector of the baskets to be studied.
 #' @param p0 the null response rate vector for the poster probability calculation
 #' (default 0.15).
 #' @param shape1 the first shape parameter(s) for the prior of each basket
@@ -84,7 +84,7 @@ borrow_multiple <- function(responses,
   {
     ind <- drug_index[i]
     p0_v = p0[ind]
-    r <- mem_single(responses = rr,
+    r <- borrow_single(responses = rr,
                     size = size,
                     name= name,
                     drug_index = ind,

@@ -7,7 +7,7 @@
 plot_borrow_density(x, ...)
 }
 \arguments{
-\item{x}{the fitted model calculated from the mem_single() function.}
+\item{x}{the fitted model calculated from the borrow_single() and borrow_multiple() function.}
 
 \item{...}{other parameters}
 }
