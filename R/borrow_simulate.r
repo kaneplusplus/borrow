@@ -7,7 +7,7 @@
 #' @param size the size of each basket.
 #' @param name the name of each basket.
 #' @param drug_index the index vector of the basket to be studied.
-#' @interim_size basket sizes for interim analyses 
+#' @param interim_size basket sizes for interim analyses 
 #' @param p0 the null response rate vector for the poster probability calculation
 #' (default 0.15).
 #' @param num_sim the number of simulationst

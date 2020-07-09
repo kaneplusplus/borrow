@@ -4,9 +4,19 @@
 \alias{mem_single}
 \title{Fit the MEM Model for single subgroup}
 \usage{
-mem_single(responses, size, name, drug_index, p0 = 0.15, shape1 = 0.5,
-  shape2 = 0.5, prior = rep(1, length(responses))/2,
-  hpd_alpha = 0.05, alternative = "greater", call = NULL)
+mem_single(
+  responses,
+  size,
+  name,
+  drug_index,
+  p0 = 0.15,
+  shape1 = 0.5,
+  shape2 = 0.5,
+  prior = rep(1, length(responses))/2,
+  hpd_alpha = 0.05,
+  alternative = "greater",
+  call = NULL
+)
 }
 \arguments{
 \item{responses}{the number of responses in each basket.}

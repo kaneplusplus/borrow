@@ -4,10 +4,22 @@
 \alias{borrow_simulate}
 \title{borrow simulation}
 \usage{
-borrow_simulate(resp, is.resp.rate, size, name, drug_index,
-  interim_size = NA, p0 = 0.15, num_sim = 100, shape1 = 0.5,
-  shape2 = 0.5, prior = rep(1, length(size))/2, hpd_alpha = 0.05,
-  alternative = "greater", call = NULL)
+borrow_simulate(
+  resp,
+  is.resp.rate,
+  size,
+  name,
+  drug_index,
+  interim_size = NA,
+  p0 = 0.15,
+  num_sim = 100,
+  shape1 = 0.5,
+  shape2 = 0.5,
+  prior = rep(1, length(size))/2,
+  hpd_alpha = 0.05,
+  alternative = "greater",
+  call = NULL
+)
 }
 \arguments{
 \item{resp}{the response outcome or the true response rates in each basket.}
@@ -19,6 +31,8 @@ borrow_simulate(resp, is.resp.rate, size, name, drug_index,
 \item{name}{the name of each basket.}
 
 \item{drug_index}{the index vector of the basket to be studied.}
+
+\item{interim_size}{basket sizes for interim analyses}
 
 \item{p0}{the null response rate vector for the poster probability calculation
 (default 0.15).}
